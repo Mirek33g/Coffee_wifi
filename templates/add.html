@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
-<!--Don't forget your import here-->
-<!--{% from "bootstrap/form.html" import render_form %}-->
+
+{% from "bootstrap/form.html" import render_form %}
 
 {% block title %}Add A New Cafe{% endblock %}
 
@@ -11,7 +11,6 @@
 
       <h1>Add a new cafe into the database</h1>
 
-      <!-- This is where your WTForm will go -->
       {{ form.csrf_token }}
       {{ render_form(form) }}
 
