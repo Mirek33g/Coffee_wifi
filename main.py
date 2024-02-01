@@ -4,6 +4,8 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, SelectField
 from wtforms.validators import DataRequired, URL
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.inspection import inspect
+
 
 # Flask  Application Setup
 app = Flask(__name__)
@@ -50,14 +52,11 @@ class CafeForm(FlaskForm):
     open = StringField('Opening Time e.g. 8AM', validators=[DataRequired()])
     close = StringField('Closing Time e.g. 5:30PM', validators=[DataRequired()])
     coffee_rating = SelectField('Coffee Rating',
-                                choices=[('☕️', '☕️'), ('☕️ ', '☕️ ☕️'), ('☕️', '☕️ ☕️ ☕️'),
-                                         ('☕️', '☕️ ☕️ ☕️ ☕️'), ('☕️', '☕️ ☕️ ☕️ ☕️ ☕️')],)
+                                choices=['☕️', '☕️ ☕️', '☕️ ☕️ ☕️', '☕️ ☕️ ☕️ ☕️', '☕️ ☕️ ☕️ ☕️ ☕️'],)
     wifi_rating = SelectField('Wifi Strength Rating',
-                              choices=[('💪', '💪'), ('💪', '💪 💪'), ('💪', '💪 💪 💪'),
-                                       ('💪', '💪 💪 💪 💪'), ('💪', '💪 💪 💪 💪 💪')],)
+                              choices=['💪', '💪 💪', '💪 💪 💪', '💪 💪 💪 💪', '💪 💪 💪 💪 💪'],)
     power = SelectField('Power Socket Availability',
-                        choices=[('🔌', '🔌'), ('🔌', '🔌 🔌'), ('🔌', '🔌 🔌 🔌'),
-                                 ('🔌', '🔌 🔌 🔌 🔌'), ('🔌', '🔌 🔌 🔌 🔌 🔌')],)
+                        choices=['🔌', '🔌 🔌', '🔌 🔌 🔌', '🔌 🔌 🔌 🔌', '🔌 🔌 🔌 🔌 🔌'],)
     submit = SubmitField('Submit')
 
 
@@ -131,6 +130,7 @@ def delete():
 @app.route('/cafes')
 def cafes():
     all_cafes = Caffees.query.all()
+    # Displays all the cafes
     return render_template('cafes.html', cafes=all_cafes)
 
 
