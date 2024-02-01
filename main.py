@@ -31,6 +31,11 @@ class CafeForm(FlaskForm):
     submit = SubmitField('Submit')
 
 
+class DelForm(FlaskForm):
+    cafe = StringField('Cafe name', validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
+
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -53,6 +58,18 @@ def add_cafe():
         return redirect(url_for('cafes'))
     else:
         return render_template('add.html', form=form)
+
+
+@app.route('/delete', methods=['GET', 'POST'])
+def delete():
+    del_form = DelForm()
+    if del_form.validate_on_submit():
+        with open('cafe-data.csv', 'w') as file:
+            reader = csv.reader(file)
+            for _ in file:
+                pass
+    return render_template('delete.html', form=del_form)
+
 
 
 @app.route('/cafes')
