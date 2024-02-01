@@ -72,6 +72,7 @@ def add_cafe():
         return render_template('add.html', form=form)
 
 
+
 # Deletes cafe from the file
 @app.route('/delete', methods=['GET', 'POST'])
 def delete():
