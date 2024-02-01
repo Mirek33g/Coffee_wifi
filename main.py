@@ -4,15 +4,11 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, SelectField
 from wtforms.validators import DataRequired, URL
 from flask_sqlalchemy import SQLAlchemy
-import csv
-
-#https://www.google.com/maps/place/Manchester
 
 # Flask  Application Setup
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
 bootstrap = Bootstrap5(app)
-
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///caffees.db"
 db = SQLAlchemy()
@@ -25,16 +21,26 @@ class Caffees(db.Model):
     location = db.Column(db.String(250), nullable=False)
     open = db.Column(db.String, nullable=False)
     close = db.Column(db.String, nullable=False)
-    coffee_rating = db.Column(db.String, nullable=False)
-    wifi_rating = db.Column(db.String, nullable=False)
-    power = db.Column(db.String, nullable=False)
+    ratings = db.relationship('Rating', backref='cafe')
 
     def __repr__(self):
         return f'<Caffee {self.cafe}>'
 
 
+class Rating(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    coffee_rating = db.Column(db.String, nullable=False)
+    wifi_rating = db.Column(db.String, nullable=False)
+    power = db.Column(db.String, nullable=False)
+    cafe_id = db.Column(db.Integer, db.ForeignKey('caffees.id'))
+
+    def __repr__(self):
+        return f'<Rating for Cafe {self.cafe_id}>'
+
+
 with app.app_context():
     db.create_all()
+
 
 # creates a form for user to add a new cafe
 class CafeForm(FlaskForm):
@@ -45,16 +51,13 @@ class CafeForm(FlaskForm):
     close = StringField('Closing Time e.g. 5:30PM', validators=[DataRequired()])
     coffee_rating = SelectField('Coffee Rating',
                                 choices=[('☕️', '☕️'), ('☕️ ', '☕️ ☕️'), ('☕️', '☕️ ☕️ ☕️'),
-                                         ('☕️', '☕️ ☕️ ☕️ ☕️'), ('☕️', '☕️ ☕️ ☕️ ☕️ ☕️')],
-                                validators=[DataRequired()])
+                                         ('☕️', '☕️ ☕️ ☕️ ☕️'), ('☕️', '☕️ ☕️ ☕️ ☕️ ☕️')],)
     wifi_rating = SelectField('Wifi Strength Rating',
                               choices=[('💪', '💪'), ('💪', '💪 💪'), ('💪', '💪 💪 💪'),
-                                       ('💪', '💪 💪 💪 💪'), ('💪', '💪 💪 💪 💪 💪')],
-                              validators=[DataRequired()])
+                                       ('💪', '💪 💪 💪 💪'), ('💪', '💪 💪 💪 💪 💪')],)
     power = SelectField('Power Socket Availability',
-                        choices=[('✘', '🔌'), ('🔌', '🔌 🔌'), ('🔌', '🔌 🔌 🔌'),
-                                 ('🔌', '🔌 🔌 🔌 🔌'), ('🔌', '🔌 🔌 🔌 🔌 🔌')],
-                        validators=[DataRequired()])
+                        choices=[('🔌', '🔌'), ('🔌', '🔌 🔌'), ('🔌', '🔌 🔌 🔌'),
+                                 ('🔌', '🔌 🔌 🔌 🔌'), ('🔌', '🔌 🔌 🔌 🔌 🔌')],)
     submit = SubmitField('Submit')
 
 
@@ -83,24 +86,30 @@ def add_cafe():
                 cafe=form.cafe.data,
                 location=form.location.data,
                 open=form.open.data,
-                close=form.close.data,
+                close=form.close.data
+            )
+            db.session.add(new_cafe)
+
+            new_rating = Rating(
                 coffee_rating=form.coffee_rating.data,
                 wifi_rating=form.wifi_rating.data,
-                power=form.power.data)
-            db.session.add(new_cafe)
+                power=form.power.data,
+                cafe=new_cafe
+            )
+
+            db.session.add(new_rating)
             db.session.commit()
 
             # Redirects to the home page
-        return redirect(url_for('cafes'))
+            return redirect(url_for('cafes'))
 
-    else:
-        return render_template('add.html', form=form)
+    return render_template('add.html', form=form)
+
 
 
 # Deletes cafe from the file
 @app.route('/delete', methods=['GET', 'POST'])
 def delete():
-
     # Creates form
     del_form = DelForm()
     # Checks if form is submitted
@@ -109,8 +118,9 @@ def delete():
         cafe_name = del_form.cafe.data
         with app.app_context():
             del_cafe = Caffees.query.filter_by(cafe=cafe_name).first()
-            db.session.delete(del_cafe)
-            db.session.commit()
+            if del_cafe:
+                db.session.delete(del_cafe)
+                db.session.commit()
         return redirect(url_for('cafes'))
 
     # Redirects to the home page
@@ -121,14 +131,9 @@ def delete():
 @app.route('/cafes')
 def cafes():
     all_cafes = Caffees.query.all()
-    if not all_cafes:
-        return render_template('cafes.html', cafes=[])
-    else:
-        return render_template('cafes.html', cafes=all_cafes)
+    return render_template('cafes.html', cafes=all_cafes)
 
 
 # Runs Main Function
 if __name__ == '__main__':
     app.run(debug=True)
-
-
