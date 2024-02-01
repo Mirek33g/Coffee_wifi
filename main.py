@@ -64,12 +64,22 @@ def add_cafe():
 def delete():
     del_form = DelForm()
     if del_form.validate_on_submit():
-        with open('cafe-data.csv', 'w') as file:
-            reader = csv.reader(file)
-            for _ in file:
-                pass
-    return render_template('delete.html', form=del_form)
+        cafe_name = del_form.cafe.data.strip().title()
+        rows = []
 
+        with open('cafe-data.csv', 'r', newline='') as file:
+            reader = csv.reader(file)
+            for row in reader:
+                if row[0] != cafe_name:
+                    rows.append(row)
+
+        with open('cafe-data.csv', 'w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerows(rows)
+
+        return redirect(url_for('cafes'))
+
+    return render_template('delete.html', form=del_form)
 
 
 @app.route('/cafes')
