@@ -5,6 +5,7 @@ from wtforms import StringField, SubmitField, SelectField
 from wtforms.validators import DataRequired, URL
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.inspection import inspect
+from models import Caffees, Rating
 
 
 # Flask  Application Setup
@@ -15,29 +16,6 @@ bootstrap = Bootstrap5(app)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///caffees.db"
 db = SQLAlchemy()
 db.init_app(app)
-
-
-class Caffees(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    cafe = db.Column(db.String(250), nullable=False, unique=True)
-    location = db.Column(db.String(250), nullable=False)
-    open = db.Column(db.String, nullable=False)
-    close = db.Column(db.String, nullable=False)
-    ratings = db.relationship('Rating', backref='cafe')
-
-    def __repr__(self):
-        return f'<Caffee {self.cafe}>'
-
-
-class Rating(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    coffee_rating = db.Column(db.String, nullable=False)
-    wifi_rating = db.Column(db.String, nullable=False)
-    power = db.Column(db.String, nullable=False)
-    cafe_id = db.Column(db.Integer, db.ForeignKey('caffees.id'))
-
-    def __repr__(self):
-        return f'<Rating for Cafe {self.cafe_id}>'
 
 
 with app.app_context():
@@ -115,11 +93,11 @@ def delete():
     if del_form.validate_on_submit():
         # Gets data from the form
         cafe_name = del_form.cafe.data
-        with app.app_context():
-            del_cafe = Caffees.query.filter_by(cafe=cafe_name).first()
-            if del_cafe:
-                db.session.delete(del_cafe)
-                db.session.commit()
+
+        del_cafe = Caffees.query.filter_by(cafe=cafe_name).first()
+        if del_cafe:
+            db.session.delete(del_cafe)
+            db.session.commit()
         return redirect(url_for('cafes'))
 
     # Redirects to the home page
