@@ -23,25 +23,33 @@
           </thead>
           <tbody>
             {% if cafes|length == 0 %}
-
               <tr>
                 <td colspan="7">No records found</td>
               </tr>
-
             {% else %}
-
               {% for cafe in cafes %}
               <tr>
                 <td>{{ cafe.cafe }}</td>
                 <td><a href="{{ cafe.location }}">Maps Link</a></td>
                 <td>{{ cafe.open }}</td>
                 <td>{{ cafe.close }}</td>
-                <td>{{ cafe.coffee_rating }}</td>
-                <td>{{ caf.rating.wifi_rating }}</td>
-                <td>{{ cafe.power }}</td>
+                <td>
+                  {% for rating in cafe.ratings %}
+                    {{ rating.coffee_rating }}
+                  {% endfor %}
+                </td>
+                <td>
+                  {% for rating in cafe.ratings %}
+                    {{ rating.wifi_rating }}
+                  {% endfor %}
+                </td>
+                <td>
+                  {% for rating in cafe.ratings %}
+                    {{ rating.power }}
+                  {% endfor %}
+                </td>
               </tr>
               {% endfor %}
-
             {% endif %}
           </tbody>
       </table>
